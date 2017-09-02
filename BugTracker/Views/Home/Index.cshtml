@@ -1,0 +1,175 @@
+﻿<!--
+Author: W3layouts
+Author URL: http://w3layouts.com
+License: Creative Commons Attribution 3.0 Unported
+License URL: http://creativecommons.org/licenses/by/3.0/
+-->
+<!DOCTYPE HTML>
+
+@{ 
+    Layout = null;
+}
+@using Microsoft.AspNet.Identity;
+@using BugTracker.Models;
+
+<html>
+<head>
+<title>Samsa</title>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" media="all">
+<link href="~/Content/splash.css" rel="stylesheet" type="text/css" media="all" />
+<link href="~/Content/font-awesome.css" rel="stylesheet" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="~/Content/flexslider.css" type="text/css" media="screen" />
+<link rel="shortcut icon" type="image/ico" href="~/Images/favicon.ico">
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="~/Scripts/move-top.js"></script>
+<script type="text/javascript" src="~/Scripts/easing.js"></script>
+		<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				$(".scroll").click(function(event){		
+					event.preventDefault();
+					$('html,body').animate({scrollTop:$(this.hash).offset().top},1200);
+				});
+			});
+		</script>
+		<script type="text/javascript">
+		$(document).ready(function() {
+				/*
+				var defaults = {
+				containerID: 'toTop', // fading element id
+				containerHoverID: 'toTopHover', // fading element hover id
+				scrollSpeed: 1200,
+				easingType: 'linear' 
+				};
+				*/
+		$().UItoTop({ easingType: 'easeOutQuart' });
+});
+</script>
+</head>
+<body>
+<!-- header -->
+	<div class="banner">
+		<div class="container">
+				<div class="head-nav">
+						<span class="menu"> </span>
+							<ul class="cl-effect-7">
+                                @if (!(User.Identity.IsAuthenticated))
+                                {
+                                    <li><a href="/Account/Login">Sign In/Register</a></li>
+                                }
+                                else
+                                {
+                                    <li><a href="/Home/Dashboard">User Dashboard</a></li>
+                                }
+
+								<li><a href="http://prhinehart-portfolio.azurewebsites.net/">Portfolio</a></li>
+								<li><a href="#demo">Demo Users</a></li>
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <li><a href="@Url.Action("LogOff", "Account")">Logout</a></li>
+                                }
+							    <div class="clearfix"> </div>
+							</ul>
+				</div>
+					<!-- script-for-nav -->
+					<script>
+						$( "span.menu" ).click(function() {
+						  $( ".head-nav ul" ).slideToggle(300, function() {
+							// Animation complete.
+						  });
+						});
+					</script>
+				<!-- script-for-nav -->
+				
+				<div class="banner-info">
+				
+				<div class="logo">
+					<h1><a href="index.html">Samsa</a></h1>
+				</div>
+                    <img src="~/Uploads/Kafka.jpg" class="img-circle" width="200" />
+					<h5>... as if the shame of it should outlive him.</h5>
+				</div>
+		</div>
+	</div>
+<!-- header -->
+<!-- advantages -->
+	<div class="advantages" id="demo">
+		<h3 style="text-align:center; margin-top:20px;">Demo Users</h3>
+        <div class="row" style="margin-bottom:5px;">
+            <div class="col-md-3">
+                <h4 style="margin-left:10px;">Admin</h4>
+                <ul style="font-size:1.2em; text-align:left">
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can view a list of all users</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can assign roles</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can create and edit all projects</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can assign Project Managers and Developers to projects</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can assign developers to tickets</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can edit all tickets</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can view a list of archived projects and tickets</li>
+                </ul>
+                <form action="/Account/Login" method="post" role="form">
+                    @Html.AntiForgeryToken()
+                    <input style="display:none" name="Email" id="Email" value="minister@mailinator.com" />
+                    <input style="display:none" name="Password" id="Password" value="Abc&123!" />
+                    <button class="btn btn-success" style="background-color:#68dff0; margin-left:10px;" type="submit"><i class="fa fa-sign-in"></i> SIGN IN</button>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <h4>Project Manager</h4>
+                <ul style="font-size: 1.2em; text-align:left">
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can view a list of users assigned to projects they manage</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can create projects</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can edit projects which they manage</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can be assigned as Manager for a project</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can assign developers to projects they manage</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can assign developers to tickets belonging to projects they manage</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can edit tickets belonging to projects they manage</li>
+                </ul>
+                <form action="/Account/Login" method="post" role="form">
+                    @Html.AntiForgeryToken()
+                    <input style="display:none" name="Email" id="Email" value="ProjectManager@mailinator.com" />
+                    <input style="display:none" name="Password" id="Password" value="Abc&123!" />
+                    <button class="btn btn-success" style="background-color:#68dff0;" type="submit"><i class="fa fa-sign-in"></i> SIGN IN</button>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <h4>Developer</h4>
+                <ul style="font-size: 1.2em; text-align:left">
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can be assigned to projects and tickets</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can edit tickets they've been assigned to</li>
+                </ul>
+                <form action="/Account/Login" method="post" role="form">
+                    @Html.AntiForgeryToken()
+                    <input style="display:none" name="Email" id="Email" value="developer@mailinator.com" />
+                    <input style="display:none" name="Password" id="Password" value="Abc&123!" />
+                    <button class="btn btn-success" style="background-color:#68dff0;" type="submit"><i class="fa fa-sign-in"></i> SIGN IN</button>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <h4>Submitter</h4>
+                <ul style="font-size:1.2em; text-align:left">
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can create tickets</li>
+                    <li><i class="fa fa-bug" aria-hidden="true"></i> Can edit tickets they've created</li>
+                </ul>
+                <form action="/Account/Login" method="post" role="form">
+                    @Html.AntiForgeryToken()
+                    <input style="display:none" name="Email" id="Email" value="Submitter@mailinator.com" />
+                    <input style="display:none" name="Password" id="Password" value="Abc&123!" />
+                    <button class="btn btn-success" style="background-color:#68dff0;" type="submit"><i class="fa fa-sign-in"></i> SIGN IN</button>
+                </form>
+            </div>
+        </div>
+	<div class="clearfix"> </div>
+				</li>
+				<div class="clearfix"> </div>
+	
+	</div>
+<!-- advantages -->
+
+		<a href="#" id="toTop" style="display: block;"><span id="toTopHover" style="opacity: 0;"></span> <span id="toTopHover" style="opacity: 0;"> </span></a>
+<!-- footer -->
+</body>
+</html>

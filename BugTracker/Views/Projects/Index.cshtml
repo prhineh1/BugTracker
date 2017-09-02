@@ -1,0 +1,100 @@
+﻿@model IEnumerable<BugTracker.Models.Project>
+@using BugTracker.Helper;
+@using Microsoft.AspNet.Identity;
+
+@{
+    ViewBag.Title = "Index";
+    var projHelper = new ProjectsHelper();
+    var roleHelper = new UserRolesHelper();
+}
+
+
+<section id="main-content">
+    <section class="wrapper site-min-height">
+        <h3><i class="fa fa-angle-right"></i> Projects</h3>
+        <div class="row mt">
+            <div class="col-lg-12">
+                <div class="content-box-large">
+                    <div class="panel-heading">
+                        <div class="row">
+                                <div class="col-md-4">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Project Manager") || User.IsInRole("Super User"))
+                                    {
+                                        <h4>@Html.ActionLink("Create New", "Create")</h4>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    @if (TempData["warning"] == "pm")
+                                    {
+                                        <div class="alert alert-dismissible alert-danger" style="position:absolute; z-index:5">
+                                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                            <text>You must be the Project Manager for this project.</text>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Super User"))
+                                    {
+                                        <form action="/Archives/Create" method="post" id="Archive" name="Archive">
+                                            @Html.AntiForgeryToken()
+                                            <input type="submit" value="Archive Checked Projects" class="btn btn-theme02" />
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="projectTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Project Manager</th>
+                                    <th>Assigned Developers</th>
+                                    <th>Tickets</th>
+                                    <th>User Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var project in Model)
+                                {
+                                    <tr>
+                                        <td>@project.Name</td>
+                                        <td>@project.ProjectManager</td>
+                                        <td>
+                                            @foreach (var dev in projHelper.UsersOnProject(project.Id))
+                                            {
+                                                if (!projHelper.IsProjectManager(dev.Id, project.Id))
+                                                {
+                                                    @dev.FullName<br />
+                                                }
+                                            }
+                                        </td>
+                                        <td>@project.Tickets.Count</td>
+                                        <td>
+                                            @if ((User.IsInRole("Project Manager") && projHelper.IsProjectManager(User.Identity.GetUserId(), project.Id)) ||
+                                                  User.IsInRole("Admin") || User.IsInRole("Super User"))
+                                            {
+                                                <a href="/projects/Edit/@project.Id"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a>
+                                            }
+                                            <br />
+                                            @if (User.IsInRole("Admin") || User.IsInRole("Super User"))
+                                            {
+                                                <input name="projectIds" type="checkbox" value="@project.Id" form="Archive" /> <text>Archive</text>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+    </section><! --/wrapper -->
+</section><!-- /MAIN CONTENT -->
+@section Scripts {
+    <script>$('#projectTable').DataTable();</script>
+}
+
+

@@ -1,0 +1,236 @@
+﻿@model BugTracker.Models.Ticket
+@using Microsoft.AspNet.Identity;
+@using BugTracker.Helper
+@using BugTracker.Models;
+
+@{
+    var userId = User.Identity.GetUserId();
+    var db = new ApplicationDbContext();
+    var currentUser = db.Users.Find(userId);
+    var projhelper = new ProjectsHelper();
+    var roleHelper = new UserRolesHelper();
+}
+
+
+<section id="main-content">
+    <section class="wrapper site-min-height">
+        <h3><i class="fa fa-angle-right"></i> <i>@Model.Title</i></h3>
+        <div class="row mt">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-md-2">
+                        <h4>@Html.ActionLink("Edit", "Edit", new { id = Model.Id })</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <h4>@Html.ActionLink("Back to List", "Index")</h4>
+                    </div>
+                    <div class="col-md-4">
+                        @if (TempData["warning"] == "warn")
+                        {
+                            <div class="alert alert-dismissible alert-danger" style="position:absolute; z-index:5">
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <text>No html allowed.</text>
+                            </div>
+                        }
+                        else if (TempData["warning"] == "max")
+                        {
+                            <div class="alert alert-dismissible alert-danger" style="position:absolute; z-index:5">
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                <text>Only 4 attachments allowed per ticket.</text>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        @if (User.IsInRole("Admin") || User.IsInRole("Super User") || Model.Project.ProjectManager == currentUser.FullName || Model.AssignedToUserId == userId || Model.OwnerUserId == userId)
+                        {
+                            <div class="panel-group" id="ticketAccordion">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" style="background-color:#ac92ec;">
+                                        <a data-toggle="collapse" data-parent="#ticketAccordion" href="#collapse1">
+                                            <h4 class="panel-title" style="color:white;">Ticket details <i class="fa fa-chevron-down" aria-hidden="true"></i></h4>
+                                        </a>
+                                    </div>
+                                    <div id="collapse1" class="panel-collapse collapse bg-theme03" style="padding-left:10px; color:white;">
+                                        <div style="padding-top:10px;">@Model.Title created on @Model.Created.DateTime</div><hr />
+                                        <div>@Model.Project.Name</div><hr />
+                                        <div>Submitted by: @Model.OwnerUser.FullName</div><hr />
+                                        @if (Model.AssignedToUser != null)
+                                        {
+                                            <div>Assigned to: @Model.AssignedToUser.FullName</div><hr />
+                                        }
+                                        @if (Model.Description != null)
+                                        {
+                                            <div>@Model.Description</div><hr />
+                                        }
+                                        <div>Priority: @Model.TicketPriority.Name<br />  Status: @Model.TicketStatus.Name<br />  Type: @Model.TicketType.Name</div><hr />
+                                        <div style="padding-bottom:10px;">
+                                            @if (Model.TicketAttachments.Count > 0)
+                                            {
+                                                <h4 style="text-align:center">Attachments</h4>
+                                                foreach (var attachment in Model.TicketAttachments)
+                                                {
+                                                    <text>@attachment.Description</text><br />
+                                                    <text>@attachment.Created.DateTime</text><br />
+                                                    <a href="@attachment.MediaUrl" style="color:yellow" target="_blank">View Attachment</a>
+                                                    <text>or</text>
+                                                    <a href="@attachment.MediaUrl" style="color:yellow" download>download</a>
+                                                    <hr />
+                                                    if (User.IsInRole("Super User") || User.IsInRole("Admin") || User.IsInRole("Project Manager"))
+                                                    {
+                                                        using (Html.BeginForm("Delete", "TicketAttachments"))
+                                                        {
+                                                            @Html.AntiForgeryToken()
+                                                            <input style="display:none" id="Id" name="Id" value=@attachment.Id />
+                                                            <button class="btn btn-danger" style="margin-top:20px;" type="submit"><i class="fa fa-remove" aria-hidden="true"> delete attachment</i></button>
+                                                            <hr />
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="panel-heading" style="background-color:#ffd777;">
+                                        <a data-toggle="collapse" data-parent="#ticketAccordion" href="#collapse2">
+                                            <h4 class="panel-title" style="color:white;">Comment on this ticket <i class="fa fa-chevron-down" aria-hidden="true"></i></h4>
+                                        </a>
+                                    </div>
+                                    <div id="collapse2" class="panel-collapse collapse">
+                                        @using (Html.BeginForm("Create", "TicketComments"))
+                                        {
+                                            @Html.AntiForgeryToken()
+
+                                            <input style="display:none" id="TicketId" name="TicketId" value=@Model.Id />
+                                            <textarea id="comment" name="comment" style="margin: 0px; height: 183px; max-height:183px; width: 100%; max-width:100%; box-sizing:border-box; border-color:white;" placeholder="Enter comment here"></textarea>
+                                            <button class="btn btn-info" type="submit"><i class="glyphicon glyphicon-circle-arrow-up"></i> Submit</button>
+                                        }
+                                    </div>
+                                    <div class="panel-heading" style="background-color:#333333;">
+                                        <a data-toggle="collapse" data-parent="#ticketAccordion" href="#collapse3" style="color:white;">
+                                            <h4 class="panel-title">Add an attachment <i class="fa fa-chevron-down" aria-hidden="true"></i></h4>
+                                        </a>
+                                    </div>
+                                    <div id="collapse3" class="panel-collapse collapse">
+                                        @using (Html.BeginForm("Create", "TicketAttachments", FormMethod.Post, new { enctype = "Multipart/form-data" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <input style="display:none" id="TicketId" name="TicketId" value=@Model.Id />
+                                            <input name="Attachment" style="margin-top: 20px;" type="file" id="fileUpload" />
+                                            <textarea type="text" style="height: 183px; max-height:183px; width: 100%; max-width:100%; box-sizing:border-box; margin-top:20px;" id="Description" name="Description" placeholder="Enter a short description for the attachment"></textarea>
+
+                                            <button class="btn btn-info" type="submit" style="margin-top:20px;"><i class="glyphicon glyphicon-circle-arrow-up"></i> Submit</button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="bg-theme03" style="border:1px solid black; padding-top: 15px; color:white; padding-left:10px;">
+                                @Html.Partial("_DetailsPartial")
+                            </div>
+                        }
+                    </div>
+                    @if (Model.TicketComments.Count > 0)
+                    {
+                        <div class="col-md-4 col-md-offset-1">
+                            <div class="ds">
+                                <div class="commentbox">
+                                    <h3>Comments</h3>
+                                    @foreach (var comment in Model.TicketComments.OrderByDescending(p => p.Created))
+                                    {
+                                        <div class="desc">
+                                            <div class="thumb">
+                                                <span class="badge bg-theme"><i class="fa fa-clock-o"></i></span>
+                                            </div>
+                                            <div class="details">
+                                                <p><muted>@comment.Created.DateTime by @comment.User.FullName</muted></p>
+                                                <p>@comment.Comment</p><br />
+                                                @if (User.IsInRole("Admin") || User.IsInRole("Super User") || (User.IsInRole("Project Manager") & !(roleHelper.IsUserInRole(comment.UserId, "Admin") || roleHelper.IsUserInRole(comment.UserId, "Super User"))) || comment.UserId == User.Identity.GetUserId())
+                                                {
+                                                    using (Html.BeginForm("Delete", "TicketComments"))
+                                                    {
+                                                        @Html.AntiForgeryToken()
+                                                        <div style="float:right">
+                                                            <button type="submit" class="btn btn-danger"><i class="fa fa-times" aria-hidden="true"></i></button>
+                                                        </div>
+                                                        <input style="display:none" id="Id" name="Id" value=@comment.Id />                                                        
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4 col-md-offset-1">
+                            <div class="ds">
+                                <div class="commentbox">
+                                    <h3>Comments</h3>
+                                    <div class="desc">
+                                        <div class="details">
+                                            <p style="text-align:center;">
+                                                No Comments.<br />
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="content-box-large" style="margin-top:30px;">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="panel-title">
+                                <div class="col-md-4">
+                                    <h4>Ticket History</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="ticketHistoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Time of Change</th>
+                                    <th>Property Changed</th>
+                                    <th>Old</th>
+                                    <th>New</th>
+                                    <th>By User</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var history in Model.TicketHistorys)
+                                {
+                                    <tr>
+                                        <td>@history.ChangedDt.DateTime</td>
+                                        <td>@history.Property</td>
+                                        <td>@history.OldValue</td>
+                                        <td>@history.NewValue</td>
+                                        <td>@history.User.FullName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @section Scripts {
+                    <script>$('#ticketHistoryTable').DataTable();</script>
+                <script>
+                    $(function () {
+                        $(".commentbox").niceScroll({ cursorcolor: "#00F" });
+                    });
+                </script>
+                }
+            </div>
+        </div>
+
+    </section><! --/wrapper -->
+</section><!-- /MAIN CONTENT -->
+
+       

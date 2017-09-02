@@ -1,0 +1,79 @@
+﻿@model BugTracker.Models.RegisterViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+
+    <title>Samsa</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="~/assets/css/bootstrap.css" rel="stylesheet">
+    <!--external css-->
+    <link href="~/assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
+
+    <!-- Custom styles for this template -->
+    <link href="~/assets/css/style.css" rel="stylesheet">
+    <link href="~/assets/css/style-responsive.css" rel="stylesheet">
+
+    <link rel="shortcut icon" type="image/ico" href="~/favicon.ico">
+
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="login-background">
+
+    <div id="login-page">
+        <div class="container">
+            <div class="form-login">
+                <h2 class="form-login-heading">sign in now</h2>
+                <div class="login-wrap">
+                    @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { enctype = "Multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary("", new { @class = "text-danger" })
+
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @placeholder = "Email" })
+                        <br />
+                        @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control", @placeholder = "First Name" })
+                        <br />
+                        @Html.TextBoxFor(m => m.LastName, new { @class = "form-control", @placeholder = "Last Name" })
+                        <br />
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", @placeholder = "Password" })
+                        <br />
+                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", @placeholder = "Confirm Password" })
+                        <br />
+                        <label for="fileUpload"><strong>Upload a profile pic:</strong></label>
+                        <input name="profilePic" type="file" id="fileUpload" />
+                        <br />
+                        <button class="btn btn-theme btn-block" type="submit"><i class="glyphicon glyphicon-plus"></i> Register</button>
+                    }
+
+                    @if (TempData["warn"] == "copy")
+                    {
+                        <div class="registration">
+                            <h4>That Name is already taken; please enter another.</h4>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- js placed at the end of the document so the pages load faster -->
+    <script src="~/assets/js/jquery.js"></script>
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    @Scripts.Render("~/bundles/jqueryval")
+</body>
+</html>

@@ -1,0 +1,252 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Bug Tracker</title>
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+</head>
+@using Microsoft.AspNet.Identity;
+@using BugTracker.Models;
+@using BugTracker.Helper;
+@{ var userId = User.Identity.GetUserId();
+    ApplicationDbContext db = new ApplicationDbContext();
+    var currentUser = db.Users.FirstOrDefault(u => u.Id == userId);
+    var projects = db.Projects.ToList();
+    var tickets = db.Tickets.ToList();
+    var roleHelper = new UserRolesHelper();
+    var projHelper = new ProjectsHelper();
+    var ticketHelper = new TicketHelper();
+}
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <!-- Logo -->
+                    <div class="logo">
+                        <h1><a href="/Home/Dashboard">Bug Tracker</a></h1>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Super User"))
+                                    {
+                                        if ((roleHelper.usersWithNoRole().Count > 0))
+                                        {
+                                            <a class="popper" data-toggle="popover" data-placement="bottom" data-trigger="hover"><i class="fa fa-exclamation fa-4x animated infinite pulse" style="color:orange;" aria-hidden="true"></i></a>
+                                            <div class="popper-content hide">
+                                                @foreach (var user in roleHelper.usersWithNoRole())
+                                                {
+                                                    <text>@user.FullName has no assigned role</text><br />
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                <div class="col-md-3">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Super User") || User.IsInRole("Project Manager"))
+                                    {
+                                        if ((projHelper.hasNoUsers().Count > 0) || projHelper.hasNoPm().Count > 0)
+                                        {
+                                            <a class="popper" data-toggle="popover" data-placement="bottom" data-trigger="hover"><i class="fa fa-exclamation fa-4x animated infinite pulse" style="color:orangered;" aria-hidden="true"></i></a>
+                                            <div class="popper-content hide">
+                                                @foreach (var project in projHelper.hasNoUsers())
+                                                {
+                                                    <strong>- @project.Name has no assigned developers</strong><br />
+                                                }
+                                                @foreach (var project in projHelper.hasNoPm())
+                                                {
+                                                    <strong>- @project.Name has no assigned project manager</strong><br />
+                                                }
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                <div class="col-md-3">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("Super User") || User.IsInRole("Project Manager"))
+                                    {
+                                        if ((ticketHelper.openTickets().Count > 0))
+                                        {
+                                            <a class="popper" data-toggle="popover" data-placement="bottom" data-trigger="hover"><i class="fa fa-exclamation fa-4x animated infinite pulse" style="color:firebrick;" aria-hidden="true"></i></a>
+                                            <div class="popper-content hide">
+                                                @foreach (var ticket in ticketHelper.openTickets())
+                                                {
+                                                    if (User.IsInRole("Admin") || User.IsInRole("Super User"))
+                                                    {
+                                                        <strong>- @ticket.Title has not been assigned</strong><br />
+                                                    }
+                                                    if (User.IsInRole("Project Manager") && projHelper.IsProjectManager(User.Identity.GetUserId(), ticket.ProjectId))
+                                                    {
+                                                        <strong>- @ticket.Title has not been assigned</strong><br />
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                    }                             
+                                </div>
+                                @if (User.IsInRole("Developer"))
+                                {
+                                    <div class="col-md-3" style="position:inherit" data-toggle="modal" data-target="#myNotifications">
+                                        <div class="animated infinite zoomIn" style="position:absolute; margin-left:15px; margin-top:10px; font-size: 16px; color:white;">4</div>
+                                        <div style="position:absolute; color:white;">
+                                            <i class="fa fa-inbox fa-4x" aria-hidden="true"></i>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                @*<div id="myNotifications" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+                        @using (Html.BeginForm("Delete", "ticketNotifications"))
+                        {
+                            @Html.AntiForgeryToken()
+                            if (tickets.ticketNotifications.Count > 0)
+                            {
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <h5>Notifications</h5>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="submit" class="btn btn-warning">Mark as Read</button>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        </div> 
+                                    </div>                               
+                                </div>
+                                <div class="modal-body">
+                                    @foreach (var notification in db.TicketNotifications.Where(t => t.UserId == userId))
+                                    {
+                                        <text>@notification.NotifyReason</text><br />
+                                        <input style="display:none" id="id" name="id" value=@notification.Id />
+                                    }
+                                </div>
+                            </div>
+                            }
+                            else
+                            {
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                   <div class="modal-title">Notifications</div>
+                                   <button type="button" class="close" data-dismiss="modal">&times;</button>                           
+                                </div>
+                                <div class="modal-body" style="text-align:center;">
+                                    <h3>No Notifications</h3>
+                                </div>
+                            </div>
+                            }
+                        }
+                    </div>
+                </div>*@
+
+                <div class="col-md-5">
+                    <div class="navbar navbar-inverse" role="banner">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bugTrackerNav">
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                        <nav class="collapse navbar-collapse bs-navbar-collapse navbar-right" role="navigation" id="bugTrackerNav">
+                            <ul class="nav navbar-nav">
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                        <i class="glyphicon glyphicon-user"></i>
+                                        @if (Request.IsAuthenticated)
+                                        {
+                                            @currentUser.FullName
+                                        }
+                                        else
+                                        {
+                                            <text>Please Login</text>
+                                        }
+                                        <b class="caret"></b>
+                                    </a>
+                                    <ul class="dropdown-menu animated fadeInUp">
+                                        @if (Request.IsAuthenticated)
+                                        {
+                                            <li><a href="/Manage/Index">Profile</a></li>
+                                            <li><a href="@Url.Action("LogOff", "Account")">Logout</a></li>
+                                        }
+                                        else
+                                        {
+                                            <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
+                                            <li>@Html.ActionLink("Login", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+                                        }
+                                    </ul>
+                                </li>
+                            </ul>                     
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="page-content">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="sidebar content-box" style="display: block; margin-top:30px;">
+                    <ul class="nav">
+                        <!-- Main menu -->
+                        <li><a href="/Home/Dashboard"><i class="glyphicon glyphicon-home"></i> Dashboard</a></li>
+                        @if (User.IsInRole("Project Manager") || User.IsInRole("Admin") || User.IsInRole("Super User"))
+                        {
+                            <li><a href="/Home/Users"><i class="glyphicon glyphicon-user"></i> User Management</a></li>
+                        }
+                        <li><a href="/Projects/index"><i class="glyphicon glyphicon-folder-open"></i> Projects<span class="badge" style="margin-left:5px; background-color:green;">@projects.Count()</span></a></li>
+                        <li><a href="/Tickets/index"><i class="fa fa-ticket"></i> Tickets<span class="badge" style="margin-left:5px; background-color:blue;">@tickets.Count()</span></a></li>
+                        @*<li class="submenu">
+                            <a href="#">
+                                <i class="glyphicon glyphicon-list"></i> Pages
+                                <span class="caret pull-right"></span>
+                            </a>
+                            <ul>
+                                <li><a href="login.html">Login</a></li>
+                                <li><a href="signup.html">Signup</a></li>
+                            </ul>
+                        </li>*@
+                    </ul>
+                </div>
+            </div>
+            @RenderBody()
+        </div>
+    </div>
+    @*<footer>
+        Copyright 2014 <a href='#'>Website</a>
+    </footer>*@
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <script>
+        $('.popper').popover({
+            container: 'body',
+            html: true,
+            content: function () {
+                return $(this).next('.popper-content').html();
+            }
+        }); 
+    </script>
+</body>
+</html>

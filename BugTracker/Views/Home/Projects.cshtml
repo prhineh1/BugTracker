@@ -1,0 +1,31 @@
+﻿
+@model BugTracker.Models.ApplicationUser
+
+
+<section id="main-content">
+    <section class="wrapper site-min-height">
+        <h3><i class="fa fa-angle-right"></i> Assign projects to <i>@Model.FullName</i></h3>
+        <div class="row mt">
+            <div class="col-lg-12">
+                @using (Html.BeginForm())
+                {
+                    @Html.AntiForgeryToken()
+
+                    @Html.ListBox("changeProjects", null)
+                    @section Scripts {
+                        <script>
+                    $('#changeProjects').multiSelect({
+                        selectableHeader: "<div class='custom-header'>Available</div>",
+                        selectionHeader: "<div class='custom-header'>Assigned</div>"
+                    });
+                        </script>
+                    }
+                    <button class="btn btn-info" type="submit" style="margin: 10px 0px 0px 140px"><i class="glyphicon glyphicon-refresh"></i> Update</button>
+                }
+            </div>
+        </div>
+
+    </section><! --/wrapper -->
+</section><!-- /MAIN CONTENT -->
+
+

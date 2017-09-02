@@ -1,0 +1,124 @@
+﻿@using BugTracker.Models
+@model LoginViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+
+    <title>Samsa</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="~/assets/css/bootstrap.css" rel="stylesheet">
+    <!--external css-->
+    <link href="~/Content/font-awesome.css" rel="stylesheet" />
+
+    <!-- Custom styles for this template -->
+    <link href="~/assets/css/style.css" rel="stylesheet">
+    <link href="~/assets/css/style-responsive.css" rel="stylesheet">
+
+    <link rel="shortcut icon" type="image/ico" href="~/favicon.ico">
+
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="login-background">
+
+    <!-- **********************************************************************************************************************************************************
+    MAIN CONTENT
+    *********************************************************************************************************************************************************** -->
+
+    <div id="login-page">
+        <div class="container">
+            <div class="form-login">
+                <h2 class="form-login-heading">sign in now</h2>
+                <div class="login-wrap">
+                    <form action="/Account/Login" method="post" role="form">
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @placeholder = "Email", @autofocus = "autofocus" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        <br>
+
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", @placeholder = "Password" })
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                        <label class="checkbox">
+                            <span class="pull-right">
+                                <a a href="" data-toggle="modal" data-target="#sendEmail"> Forgot Password?</a>
+                            </span>
+                        </label>
+                        <button class="btn btn-theme btn-block" type="submit"><i class="fa fa-sign-in"></i> SIGN IN</button>
+                    </form>
+                    <br />
+                    @if (TempData["Message"] == "sendConfirm")
+                    {   
+                        <div class="registration">
+                            <h4>Please check your email to reset your password.</h4>
+                        </div>
+                    }
+                    else if (TempData["Message"] == "resetConfirm")
+                    {
+                        <div class="registration">
+                            <h4>Your Password has successfully been reset.</h4>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="registration">
+                            Don't have an account yet?<br />
+                            <a class="" href="/Account/Register">
+                                Create an account
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                <!-- Modal -->
+                <div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="sendEmail" class="modal fade">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title">Forgot Password?</h4>
+                            </div>
+                            @using (Html.BeginForm("ForgotPassword", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <div class="modal-body">
+                                    <p>Enter your e-mail address below to reset your password.</p>
+                                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control placeholder-no-fix", @placeholder = "Email" })
+                                </div>
+                                <div class="modal-footer">
+                                    <button data-dismiss="modal" class="btn btn-default" type="button">Cancel</button>
+                                    <button class="btn btn-theme" type="submit">Submit</button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <!-- modal -->
+            </div>
+        </div>
+    </div>
+
+    <!-- js placed at the end of the document so the pages load faster -->
+    <script src="~/assets/js/jquery.js"></script>
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    @Scripts.Render("~/bundles/jqueryval")
+
+</body>
+</html>
+
+

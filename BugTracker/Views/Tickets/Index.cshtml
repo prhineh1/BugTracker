@@ -1,0 +1,125 @@
+﻿@model IEnumerable<BugTracker.Models.Ticket>
+@using BugTracker.Helper;
+@using Microsoft.AspNet.Identity;
+
+@{
+    ViewBag.Title = "Index";
+    var projHelper = new ProjectsHelper();
+    var ticketHelper = new TicketHelper();
+}
+
+
+<section id="main-content">
+    <section class="wrapper site-min-height">
+        <h3><i class="fa fa-angle-right"></i> Tickets</h3>
+        <div class="row mt">
+            <div class="col-lg-12">
+                <div class="content-box-large">
+                    <div class="panel-heading">
+                        <div class="row">
+                            <div class="panel-title">
+                                <div class="col-md-6">
+                                    @if (User.IsInRole("Submitter"))
+                                    {
+                                        <h4>@Html.ActionLink("Create New", "Create")</h4>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="ticketTable">
+                            <thead>
+                                <tr>
+                                    <th>Title </th>
+                                    <th>Project</th>
+                                    <th>Submitter</th>
+                                    <th>Assigned To</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>User Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ticket in Model)
+                                {
+                                    <tr>
+                                        <td>@ticket.Title</td>
+                                        <td>@ticket.Project.Name</td>
+                                        <td>@ticket.OwnerUser.FullName</td>
+                                        <td>
+                                            @if (ticket.AssignedToUser == null)
+                                            {
+                                                <text>not assigned</text>
+                                            }
+                                            else
+                                            {
+                                                @ticket.AssignedToUser.FullName
+                                            }
+                                        </td>
+                                        <td><text>Type: @ticket.TicketType.Name</text></td>                                           
+                                        <td><text>Status: @ticket.TicketStatus.Name</text></td>
+                                        <td><text>Priority: @ticket.TicketPriority.Name</text></td>
+                                        <td>
+                                            @if (User.IsInRole("Admin") || User.IsInRole("Super User"))
+                                            {
+                                                <a href="/Tickets/Edit/@ticket.Id"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a><br />
+                                            }
+                                            else if (User.IsInRole("Project Manager"))
+                                            {
+                                                foreach (var project in projHelper.ListUserProjects(User.Identity.GetUserId()))
+                                                {
+                                                    if (projHelper.IsProjectManager(User.Identity.GetUserId(), project.Id) && projHelper.ListProjectTickets(project.Id).Count > 0)
+                                                    {
+                                                        foreach (var tick in projHelper.ListProjectTickets(project.Id))
+                                                        {
+                                                            if (tick.Id == ticket.Id)
+                                                            {
+                                                                <a href="/Tickets/Edit/@ticket.Id"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a><br />
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else if (User.IsInRole("Developer") || User.IsInRole("Submitter"))
+                                            {
+                                                if ((ticketHelper.GetAssignedTickets(User.Identity.GetUserId()).Count > 0) || ticketHelper.GetUserOwnedTickets(User.Identity.GetUserId()).Count > 0)
+                                                {
+                                                    foreach (var tick in ticketHelper.GetAssignedTickets(User.Identity.GetUserId()))
+                                                    {
+                                                        if (tick.Id == ticket.Id)
+                                                        {
+                                                            <a href="/Tickets/Edit/@ticket.Id"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a><br />
+                                                        }
+                                                    }
+                                                    foreach (var tick in ticketHelper.GetUserOwnedTickets(User.Identity.GetUserId()))
+                                                    {
+                                                        if (tick.Id == ticket.Id)
+                                                        {
+                                                            <a href="/Tickets/Edit/@ticket.Id"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a><br />
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            <a href="/Tickets/details/@ticket.Id"><i class="fa fa-info" aria-hidden="true"></i> Details</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @section Scripts {
+                    <script>$('#ticketTable').DataTable();</script>
+                }
+
+
+            </div>
+        </div>
+
+    </section><! --/wrapper -->
+</section><!-- /MAIN CONTENT -->
+
+
+    

@@ -1,0 +1,240 @@
+@using BugTracker.Models;
+@using BugTracker.Helper
+@using Microsoft.AspNet.Identity;
+@{ var roleHelper = new UserRolesHelper();
+    var projHelper = new ProjectsHelper();
+    var ticketHelper = new TicketHelper();
+    var userId = User.Identity.GetUserId();
+    var timeHelper = new TimeHelper();
+    }
+
+   <section id="main-content">
+    <section class="wrapper site-min-height">
+        <h3><i class="fa fa-angle-right"></i> Dashboard</h3>
+        <div class="row mt">
+            <div class="col-lg-9">
+                <div class="row">
+                    @if (ViewBag.tickets != null)
+                    {
+                        <div class="col-lg-6">
+                            <div class="content-panel">
+                                <h4><i class="fa fa-angle-right"></i> Tickets by Type</h4>
+                                <div class="panel-body text-center">
+                                    <canvas id="TypePie" height="300" width="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="content-panel">
+                                <h4><i class="fa fa-angle-right"></i> Tickets by Priority</h4>
+                                <div class="panel-body text-center">
+                                    <canvas id="PriorityPie" height="300" width="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="row mt">
+                    @if (ViewBag.projects != null)
+                    {
+                        if (ViewBag.projects.Count > 0 && User.IsInRole("Project Manager") || User.IsInRole("Developer"))
+                        {
+                            <div class="col-lg-12 col-md-12 col-sm-12 mb">
+                                <div class="darkblue-panel">
+                                    <div class="darkblue-header">
+                                        <h5>Your Projects</h5>
+                                    </div>
+                                    @foreach (Project project in ViewBag.projects)
+                                    {
+                                        <div class="row">
+                                            <div class="col-md-3" style="color:white;">
+                                                @project.Name
+                                            </div>
+                                            <div class="col-md-5" style="color:white;">
+                                                Manager: @project.ProjectManager
+                                            </div>
+                                            <div class="col-md-2" style="color:white;">
+                                                tickets: @project.Tickets.Count
+                                            </div>
+                                            @if (User.IsInRole("Project Manager") || User.IsInRole("Admin") || User.IsInRole("Super User"))
+                                            {
+                                                <div class="col-md-2">
+                                                    <a href="/projects/edit/@project.Id"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a>
+                                                </div>
+                                            }
+                                        </div><hr />
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="row mt">
+                    @if (ViewBag.tickets != null)
+                    {
+                        if (ViewBag.tickets.Count > 0 && User.IsInRole("Submitter") || User.IsInRole("Developer"))
+                        {
+                            <div class="col-lg-12 col-md-12 col-sm-12 mb">
+                                <div class="darkblue-panel">
+                                    <div class="darkblue-header">
+                                        <h5>Your Tickets</h5>
+                                    </div>
+                                    @foreach (Ticket ticket in ViewBag.tickets)
+                                    {
+                                        <div class="row">
+                                            <div class="col-md-3" style="color:white;">
+                                                @ticket.Title
+                                            </div>
+                                            <div class="col-md-5" style="color:white;">
+                                                Project: @ticket.Project.Name
+                                            </div>
+                                            <div class="col-md-2">
+                                                <a href="/tickets/details/@ticket.Id"><i class="fa fa-info" aria-hidden="true"></i> Details</a><br />
+                                                <a href="/tickets/edit/@ticket.Id"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a>
+                                            </div>
+                                        </div><hr />
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+             </div>
+
+            <!---Notifications---->
+
+                @if (ViewBag.notifications != null)
+            {
+                if (ViewBag.notifications.Count > 0)
+                {
+                        <div class="col-lg-3 ds">
+                            <div class="ticketNotification">
+                                <div class="scrollWrapper">
+                                    <h3>Notifications</h3>
+                                    @using (Html.BeginForm("delete", "Home"))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-block">Mark selected as Read</button>
+                                        if (ViewBag.notifications.Count > 0)
+                                        {
+                                            foreach (Notification notification in ViewBag.notifications)
+                                            {
+                                                <div class="desc">
+                                                    <div class="thumb">
+                                                        <span class="badge bg-theme"><i class="fa fa-clock-o"></i></span>
+                                                    </div>
+                                                    <div class="details">
+                                                        <p><muted>@timeHelper.timeSinceNotification(notification)</muted><br />
+                                                        <p>
+                                                            @notification.NotifyReason<br />
+                                                        </p>
+                                                    </div>
+                                                    <input type="checkbox" id="Id" name="Id" value=@notification.Id />
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-lg-3 ds">
+                            <div class="ticketNotification">
+                                <h3>Notifications</h3>
+                                <div class="desc">
+                                    <div class="details">
+                                        <p style="text-align:center;">
+                                            You have no new Notifications.<br />
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-lg-3 ds">
+                        <div class="ticketNotification">
+                            <h3>Notifications</h3>
+                            <div class="desc">
+                                <div class="details">
+                                    <p style="text-align:center;">
+                                        You have no new Notifications.<br />
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            <!---/Notifications---->
+        </div> <!--row-mt-->
+    </section><! --/wrapper -->
+</section><!-- /MAIN CONTENT -->
+@section scripts {
+    @if (ViewBag.tickets != null)
+    {
+        <script>
+        var ctx = document.getElementById("TypePie").getContext("2d");
+        var TypePie = new Chart (ctx, {
+            type: 'pie',
+            data: {
+                labels: ["Bug", "Task", "Informational", "Feature Request", "Call For Documentation"],
+                datasets: [{
+                    label: "# of that type",
+                    data: [
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByType(ViewBag.tickets, "Bug"))),
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByType(ViewBag.tickets, "Task"))),
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByType(ViewBag.tickets, "Informational"))),
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByType(ViewBag.tickets, "Feature Request"))),
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByType(ViewBag.tickets, "Call For Documentation")))
+                    ],
+                    backgroundColor: [
+                      'rgb(5, 22, 51)',
+                      'rgb(89, 11, 91)',
+                      'rgb(104, 13, 13)',
+                      'rgb(28, 48, 13)',
+                      'rgb(206, 196, 8)'
+                    ]
+            }]
+        }
+        });
+        </script>
+
+        <script>
+        var ctx = document.getElementById("PriorityPie").getContext("2d");
+        var TypePie = new Chart (ctx, {
+            type: 'pie',
+            data: {
+                labels: ["Immediate", "High", "Medium", "Low"],
+                datasets: [{
+                    label: "# of that priority",
+                    data: [
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByPriority(ViewBag.tickets, "Immediate"))),
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByPriority(ViewBag.tickets, "High"))),
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByPriority(ViewBag.tickets, "Medium"))),
+                       @Html.Raw(Json.Encode(ticketHelper.getTicketsByPriority(ViewBag.tickets,"Low")))
+                    ],
+                    backgroundColor: [
+                      'rgb(5, 22, 51)',
+                      'rgb(89, 11, 91)',
+                      'rgb(104, 13, 13)',
+                      'rgb(28, 48, 13)'
+                    ]
+            }]
+        }
+        });
+        </script>
+    }
+    
+
+    <script>
+        $(function () {
+            $(".ticketNotification").niceScroll({ cursorcolor: "#00F" });
+        });
+    </script>
+    }
+
+

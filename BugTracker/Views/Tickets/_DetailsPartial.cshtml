@@ -1,0 +1,34 @@
+﻿
+                    Created: @Model.Created.DateTime
+                    <hr />
+                    Submitter: @Model.OwnerUser.FullName
+                    <hr />
+                    @if (Model.AssignedToUser != null)
+                    {
+                        <text>Last assigned to: @Model.AssignedToUser.FullName</text>
+                        <hr />
+                    }
+                    @Model.Description
+                    <hr />
+                    Type: @Model.TicketType.Name
+                    <br />
+                    Priority: @Model.TicketPriority.Name
+                    <br />
+                    Status: @Model.TicketStatus.Name
+                    <hr />
+                    @if (Model.TicketAttachments.Count > 0)
+                    {
+                        <h4 style="text-align:center">Attachments</h4>
+                        <br />
+                        foreach (var attachment in Model.TicketAttachments)
+                        {
+                            @attachment.Description
+                            <br />
+                            @attachment.Created.DateTime
+                            <br />
+                            <a href="@attachment.MediaUrl" style="color:yellow" target="_blank">View Attachment</a>
+                            <text>or</text>
+                            <a href="@attachment.MediaUrl" style="color:yellow" download>download</a>
+                            <hr />
+                        }
+                    }
