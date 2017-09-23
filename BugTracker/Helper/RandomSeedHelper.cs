@@ -50,7 +50,7 @@ namespace BugTracker.Helper
         {
             for (var i=0; i < number; i++)
             {
-                var name = string.Concat("Project", i + 1);
+                var name = string.Concat("Project ", i + 1);
                 var random = new Random();
 
                 var project = new Project();
@@ -127,7 +127,7 @@ namespace BugTracker.Helper
             //Create 'number' tickets per project
             for (var i = 0; i < number; i++)
             {
-                var title = string.Concat("Ticket", i + 1," ", context.Projects.Find(projectId).Name);
+                var title = string.Concat("Ticket ", i + 1," ", context.Projects.Find(projectId).Name);
                 var random = new Random();
 
                 var ticket = new Ticket();
